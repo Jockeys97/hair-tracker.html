@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hair Care Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f9fafb;
+            line-height: 1.6;
+            color: #374151;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4rem;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: transparent;
+            color: #6b7280;
+        }
+
+        .nav-tab:hover {
+            color: #111827;
+        }
+
+        .nav-tab.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 6rem;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Treatment items */
+        .treatment-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .treatment-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .treatment-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 1rem;
+            height: 1rem;
+            accent-color: #2563eb;
+        }
+
+        .treatment-name {
+            font-weight: 500;
+        }
+
+        .treatment-name.completed {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+
+        /* Timer */
+        .timer {
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+
+        .timer.running {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .timer.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .timer.danger {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        /* Timer duration selector */
+        .timer-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .timer-select {
+            padding: 0.25rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            min-width: 80px;
+        }
+
+        .timer-custom {
+            width: 60px;
+        }
+
+        /* Hair quality ratings */
+        .hair-quality-section {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hair-quality-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .hair-quality-item {
+            text-align: center;
+        }
+
+        .hair-quality-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .hair-quality-slider {
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+        .hair-quality-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid;
+        }
+
+        .alert-danger {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #991b1b;
+        }
+
+        /* Chart containers */
+        .chart-real {
+            height: 300px;
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+
+        /* Stats cards */
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .stat-green { background: #f0fdf4; }
+        .stat-green .stat-value { color: #166534; }
+
+        .stat-blue { background: #eff6ff; }
+        .stat-blue .stat-value { color: #1e40af; }
+
+        .stat-purple { background: #faf5ff; }
+        .stat-purple .stat-value { color: #7c3aed; }
+
+        .stat-orange { background: #fff7ed; }
+        .stat-orange .stat-value { color: #ea580c; }
+
+        /* History specific styles */
+        .history-entry {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .history-date {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-section {
+            margin-bottom: 0.75rem;
+        }
+
+        .history-section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-items {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-left: 1rem;
+        }
+
+        .history-notes {
+            background: #f3f4f6;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-style: italic;
+            color: #4b5563;
+            margin-top: 0.5rem;
+        }
+
+        .no-history {
+            text-align: center;
+            color: #6b7280;
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* Photo related styles */
+        .photo-container {
+            margin-top: 0.75rem;
+            text-align: center;
+        }
+
+        .photo-container img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-caption {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .photo-container img {
+                max-height: 150px;
+            }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none;
+        }
+
+        /* Icons (using Unicode symbols) */
+        .icon {
+            display: inline-block;
+            font-style: normal;
+            font-size: 1rem;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hair-quality-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .timer-controls {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .header-content {
+                padding: 0 0.5rem;
+            }
+            
+            .header h1 {
+                font-size: 1rem;
+            }
+            
+            .nav-tabs {
+                gap: 0.25rem;
+            }
+            
+            .nav-tab {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            .container {
+                padding: 1rem 0.5rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Hair Care Tracker</h1>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('tracker')">Daily Tracker</button>
+                <button class="nav-tab" onclick="showTab('analytics')">Analytics</button>
+                <button class="nav-tab" onclick="showTab('supplements')">Supplements</button>
+                <button class="nav-tab" onclick="showTab('history')">Day History</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Daily Tracker Tab -->
+        <div id="tracker-tab" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">📅</span>
+                    Daily Tracking - <span id="current-date"></span>
+                </h2>
+
+                <!-- Temperature Alert -->
+                <div id="temperature-alert" class="alert alert-danger hidden">
+                    ⚠️ High temperature detected! Consider moving to cooler storage.
+                </div>
+
+                <!-- Topical Treatments Section -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                    <h3 style="font-weight: bold; margin-bottom: 1rem; color: #166534;">Topical Treatments</h3>
+                    
+                    <!-- Preset Topical Treatments -->
+                    <div style="margin-bottom: 1rem;">
+                        <div id="topical-treatments-list">
+                            <!-- Topical treatments will be populated by JavaScript -->
+                        </div>
+                        
+                        <!-- Add Custom Topical Treatment -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                            <input type="text" id="custom-topical-treatment" class="form-input" placeholder="Add custom topical treatment..." onkeypress="handleCustomTopicalTreatmentEnter(event)">
+                            <button class="btn btn-primary" onclick="addCustomTopicalTreatment()">
+                                <span class="icon">➕</span> Add
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Temperature & Storage -->
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="icon">🌡️</span> Max Temperature (°C)
+                            </label>
+                            <input type="number" id="temperature" class="form-input" placeholder="25" onchange="checkTemperature()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <span class="icon">📍</span> Storage Location
+                            </label>
+                            <select id="storage-location" class="form-input">
+                                <option>Fridge (2-8°C)</option>
+                                <option>Room Temperature</option>
+                                <option>Thermal Bag</option>
+                                <option>Car</option>
+                                <option>Bathroom Cabinet</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hair Quality Ratings -->
+                <div class="hair-quality-section">
+                    <h3 style="font-weight: bold; margin-bottom: 0.5rem; color: #1e40af;">Hair Quality Assessment</h3>
+                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.75rem;">Rate your hair quality from 1 (poor) to 10 (excellent) for each zone:</p>
+                    
+                    <div class="hair-quality-grid">
+                        <div class="hair-quality-item">
+                            <div class="hair-quality-label">Frontal</div>
+                            <input type="range" id="frontal-rating" class="hair-quality-slider" min="1" max="10" value="5" oninput="updateRatingDisplay('frontal')">
+                            <div id="frontal-value" class="hair-quality-value">5</div>
+                        </div>
+                        <div class="hair-quality-item">
+                            <div class="hair-quality-label">Middle</div>
+                            <input type="range" id="middle-rating" class="hair-quality-slider" min="1" max="10" value="5" oninput="updateRatingDisplay('middle')">
+                            <div id="middle-value" class="hair-quality-value">5</div>
+                        </div>
+                        <div class="hair-quality-item">
+                            <div class="hair-quality-label">Vertex</div>
+                            <input type="range" id="vertex-rating" class="hair-quality-slider" min="1" max="10" value="5" oninput="updateRatingDisplay('vertex')">
+                            <div id="vertex-value" class="hair-quality-value">5</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Treatments -->
+                <div class="form-group">
+                    <h3 class="form-label">Other Treatments</h3>
+                    <div id="treatments-list">
+                        <!-- Treatments will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Add Custom Treatment -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                        <input type="text" id="custom-treatment" class="form-input" placeholder="Add custom treatment..." onkeypress="handleCustomTreatmentEnter(event)">
+                        <button class="btn btn-primary" onclick="addCustomTreatment()">
+                            <span class="icon">➕</span> Add
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="form-label">Daily Notes</label>
+                    <textarea id="daily-notes" class="form-input form-textarea" placeholder="How did your hair feel today? Any observations..."></textarea>
+                </div>
+
+                <!-- Photo Upload -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="icon">📷</span> Progress Photo (Optional)
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <input type="file" id="photo-upload" class="form-input" accept="image/*" onchange="handlePhotoUpload(event)" style="flex: 1;">
+                        <button type="button" class="btn btn-secondary btn-small" onclick="clearPhoto()" id="clear-photo-btn" style="display: none;">
+                            <span class="icon">🗑️</span> Clear
+                        </button>
+                    </div>
+                    <div id="photo-preview" style="margin-top: 0.5rem; display: none;">
+                        <img id="preview-image" src="" alt="Photo preview" style="max-width: 200px; max-height: 200px; border-radius: 0.375rem; border: 1px solid #d1d5db;">
+                    </div>
+                </div>
+
+                <!-- Save Day Button -->
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <button class="btn btn-primary" onclick="saveDay()" style="padding: 0.75rem 2rem; font-size: 1rem;">
+                        <span class="icon">💾</span> Save Day
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 class="card-title">
+                        <span class="icon">📈</span>
+                        Analytics Dashboard
+                    </h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary" onclick="setViewMode('weekly')">Weekly</button>
+                        <button class="btn btn-secondary" onclick="setViewMode('monthly')">Monthly</button>
+                    </div>
+                </div>
+
+                <!-- Hair Quality Chart -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Hair Quality Progression</h3>
+                    <div class="chart-real">
+                        <canvas id="hairQualityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Supplement Chart -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Supplement Compliance</h3>
+                    <div class="chart-real">
+                        <canvas id="supplementChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="grid grid-4">
+                    <div class="stat-card stat-green">
+                        <div class="stat-value" id="treatment-compliance">92%</div>
+                        <div class="stat-label">Treatment Compliance</div>
+                    </div>
+                    <div class="stat-card stat-blue">
+                        <div class="stat-value" id="avg-hair-quality">7.2</div>
+                        <div class="stat-label">Avg Hair Quality</div>
+                    </div>
+                    <div class="stat-card stat-purple">
+                        <div class="stat-value" id="days-tracked">0</div>
+                        <div class="stat-label">Days Tracked</div>
+                    </div>
+                    <div class="stat-card stat-orange">
+                        <div class="stat-value" id="active-supplements">4</div>
+                        <div class="stat-label">Active Supplements</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supplements Tab -->
+        <div id="supplements-tab" class="tab-content hidden">
+            <div class="card">
+                <h2 class="card-title">
+                    <span class="icon">💊</span>
+                    Supplement Management
+                </h2>
+
+                <!-- Add Supplement Form -->
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem;">Add New Supplement</h3>
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Supplement Name</label>
+                            <input type="text" id="supplement-name" class="form-input" placeholder="e.g. Zinc">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select id="supplement-type" class="form-input">
+                                <option>vitamin</option>
+                                <option>mineral</option>
+                                <option>enzyme</option>
+                                <option>other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Dosage</label>
+                            <input type="text" id="supplement-dosage" class="form-input" placeholder="e.g. 15mg">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Time</label>
+                            <input type="time" id="supplement-time" class="form-input">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSupplement()">
+                        <span class="icon">➕</span> Add Supplement
+                    </button>
+                </div>
+
+                <!-- Supplements List -->
+                <div>
+                    <h3 style="margin-bottom: 1rem;">Today's Supplements</h3>
+                    <div id="supplements-list">
+                        <!-- Supplements will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Day History Tab -->
+        <div id="history-tab" class="tab-content hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 class="card-title">
+                        <span class="icon">📋</span>
+                        Day History
+                    </h2>
+                    <button class="btn btn-secondary" onclick="exportToCSV()">
+                        <span class="icon">📥</span> Export to CSV
+                    </button>
+                </div>
+
+                <div id="history-list">
+                    <!-- History entries will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Default treatments
+        const defaultTreatments = [
+            { name: 'Microneedling', isCustom: false },
+            { name: 'Balsamo', isCustom: false },
+            { name: 'Aloe Vera', isCustom: false }
+        ];
+
+        // Default topical treatments
+        const defaultTopicalTreatments = [
+            { name: 'Minoxidil 5%', isCustom: false },
+            { name: 'Minoxidil 2.5%', isCustom: false },
+            { name: 'Finasteride 0.25%', isCustom: false },
+            { name: 'RU58841', isCustom: false }
+        ];
+
+        // Default supplements
+        const defaultSupplements = [
+            { name: 'Zinc', type: 'mineral', dosage: '15mg', time: '08:00' },
+            { name: 'Copper', type: 'mineral', dosage: '2mg', time: '08:00' },
+            { name: 'Quercetin', type: 'other', dosage: '500mg', time: '12:00' },
+            { name: 'Vitamin C', type: 'vitamin', dosage: '1000mg', time: '08:00' }
+        ];
+
+        // State
+        let treatments = [];
+        let topicalTreatments = [];
+        let supplements = [];
+        let timers = {};
+        let dailyHistory = [];
+        let hairQualityChart = null;
+        let supplementChart = null;
+        let currentPhotoData = null;
+
+        // Initialize app
+        function init() {
+            setCurrentDate();
+            loadData();
+            renderTreatments();
+            renderTopicalTreatments();
+            renderSupplements();
+            renderHistory();
+            updateStats(); // Add this line to update stats on initialization
+            setTimeout(initializeCharts, 100); // Delay to ensure DOM is ready
+        }
+
+        // Set current date
+        function setCurrentDate() {
+            const today = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('current-date').textContent = today;
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            try {
+                const savedTreatments = localStorage.getItem('hair-treatments');
+                const savedTopicalTreatments = localStorage.getItem('hair-topical-treatments');
+                const savedSupplements = localStorage.getItem('hair-supplements');
+                const savedHistory = localStorage.getItem('hair-daily-history');
+                
+                treatments = savedTreatments ? JSON.parse(savedTreatments) : 
+                    defaultTreatments.map(t => ({ ...t, id: generateId(), isCompleted: false }));
+                
+                topicalTreatments = savedTopicalTreatments ? JSON.parse(savedTopicalTreatments) : 
+                    defaultTopicalTreatments.map(t => ({ ...t, id: generateId(), isCompleted: false }));
+                
+                supplements = savedSupplements ? JSON.parse(savedSupplements) : 
+                    defaultSupplements.map(s => ({ ...s, id: generateId(), taken: false }));
+                
+                dailyHistory = savedHistory ? JSON.parse(savedHistory) : [];
+            } catch (error) {
+                console.error('Error loading data:', error);
+                treatments = defaultTreatments.map(t => ({ ...t, id: generateId(), isCompleted: false }));
+                topicalTreatments = defaultTopicalTreatments.map(t => ({ ...t, id: generateId(), isCompleted: false }));
+                supplements = defaultSupplements.map(s => ({ ...s, id: generateId(), taken: false }));
+                dailyHistory = [];
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            try {
+                localStorage.setItem('hair-treatments', JSON.stringify(treatments));
+                localStorage.setItem('hair-topical-treatments', JSON.stringify(topicalTreatments));
+                localStorage.setItem('hair-supplements', JSON.stringify(supplements));
+                localStorage.setItem('hair-daily-history', JSON.stringify(dailyHistory));
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+        }
+
+        // Generate unique ID
+        function generateId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // Update nav buttons
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update charts when analytics tab is shown
+            if (tabName === 'analytics') {
+                setTimeout(() => {
+                    updateCharts();
+                }, 100);
+            }
+        }
+
+        // Hair quality rating functions
+        function updateRatingDisplay(zone) {
+            const slider = document.getElementById(`${zone}-rating`);
+            const display = document.getElementById(`${zone}-value`);
+            display.textContent = slider.value;
+        }
+
+        // Photo handling functions
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                clearPhoto();
+                return;
+            }
+
+            // Check file size (limit to 5MB to avoid localStorage issues)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Photo is too large. Please choose a photo smaller than 5MB.');
+                event.target.value = '';
+                clearPhoto();
+                return;
+            }
+
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                event.target.value = '';
+                clearPhoto();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentPhotoData = e.target.result;
+                
+                // Show preview
+                const preview = document.getElementById('photo-preview');
+                const previewImage = document.getElementById('preview-image');
+                const clearBtn = document.getElementById('clear-photo-btn');
+                
+                previewImage.src = currentPhotoData;
+                preview.style.display = 'block';
+                clearBtn.style.display = 'inline-flex';
+            };
+            
+            reader.onerror = function() {
+                alert('Error reading the photo. Please try again.');
+                clearPhoto();
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function clearPhoto() {
+            currentPhotoData = null;
+            document.getElementById('photo-upload').value = '';
+            document.getElementById('photo-preview').style.display = 'none';
+            document.getElementById('clear-photo-btn').style.display = 'none';
+        }
+
+        // Treatment management
+        function renderTreatments() {
+            const container = document.getElementById('treatments-list');
+            container.innerHTML = '';
+
+            treatments.forEach(treatment => {
+                const item = document.createElement('div');
+                item.className = 'treatment-item';
+                
+                item.innerHTML = `
+                    <div class="treatment-left">
+                        <input type="checkbox" class="checkbox" ${treatment.isCompleted ? 'checked' : ''} 
+                               onchange="toggleTreatment('${treatment.id}')">
+                        <div style="flex: 1;">
+                            <span class="treatment-name ${treatment.isCompleted ? 'completed' : ''}">${treatment.name}</span>
+                            ${treatment.isCompleted ? getTimerControlsHTML(treatment.id) : ''}
+                        </div>
+                    </div>
+                    <div class="treatment-right">
+                        ${treatment.isCompleted ? getTimerHTML(treatment.id) : ''}
+                        ${treatment.isCustom ? `<button class="btn btn-danger btn-small" onclick="removeTreatment('${treatment.id}')">🗑️</button>` : ''}
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        // Photo viewing function
+        function viewFullPhoto(photoData, date) {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+                cursor: pointer;
+            `;
+            
+            // Create image container
+            const imageContainer = document.createElement('div');
+            imageContainer.style.cssText = `
+                max-width: 90%;
+                max-height: 90%;
+                text-align: center;
+            `;
+            
+            // Create image
+            const img = document.createElement('img');
+            img.src = photoData;
+            img.alt = `Progress photo for ${date}`;
+            img.style.cssText = `
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0.5rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            `;
+            
+            // Create caption
+            const caption = document.createElement('div');
+            caption.textContent = `Progress Photo - ${date}`;
+            caption.style.cssText = `
+                color: white;
+                margin-top: 1rem;
+                font-size: 1rem;
+                font-weight: 500;
+            `;
+            
+            // Create close instruction
+            const closeText = document.createElement('div');
+            closeText.textContent = 'Click anywhere to close';
+            closeText.style.cssText = `
+                color: rgba(255, 255, 255, 0.7);
+                margin-top: 0.5rem;
+                font-size: 0.875rem;
+            `;
+            
+            imageContainer.appendChild(img);
+            imageContainer.appendChild(caption);
+            imageContainer.appendChild(closeText);
+            modal.appendChild(imageContainer);
+            
+            // Close modal on click
+            modal.addEventListener('click', () => {
+                document.body.removeChild(modal);
+            });
+            
+            // Add to body
+            document.body.appendChild(modal);
+        }
+
+        // Topical treatment management
+        function renderTopicalTreatments() {
+            const container = document.getElementById('topical-treatments-list');
+            container.innerHTML = '';
+
+            topicalTreatments.forEach(treatment => {
+                const item = document.createElement('div');
+                item.className = 'treatment-item';
+                
+                item.innerHTML = `
+                    <div class="treatment-left">
+                        <input type="checkbox" class="checkbox" ${treatment.isCompleted ? 'checked' : ''} 
+                               onchange="toggleTopicalTreatment('${treatment.id}')">
+                        <div style="flex: 1;">
+                            <span class="treatment-name ${treatment.isCompleted ? 'completed' : ''}">${treatment.name}</span>
+                            ${treatment.isCompleted ? getTimerControlsHTML(treatment.id) : ''}
+                        </div>
+                    </div>
+                    <div class="treatment-right">
+                        ${treatment.isCompleted ? getTimerHTML(treatment.id) : ''}
+                        ${treatment.isCustom ? `<button class="btn btn-danger btn-small" onclick="removeTopicalTreatment('${treatment.id}')">🗑️</button>` : ''}
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function getTimerControlsHTML(treatmentId) {
+            const timer = timers[treatmentId];
+            if (timer && timer.endTime > Date.now()) {
+                return ''; // Don't show controls if timer is running
+            }
+            
+            return `
+                <div class="timer-controls">
+                    <select id="duration-${treatmentId}" class="timer-select" onchange="toggleCustomInput('${treatmentId}')">
+                        <option value="60">1 hour</option>
+                        <option value="240">4 hours</option>
+                        <option value="360">6 hours</option>
+                        <option value="720">12 hours</option>
+                        <option value="1440" selected>24 hours</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <input type="number" id="custom-${treatmentId}" class="timer-select timer-custom" placeholder="min" style="display: none;" min="1">
+                    <button class="btn btn-primary btn-small" onclick="startTimerWithDuration('${treatmentId}')">
+                        <span class="icon">⏱️</span> Start
+                    </button>
+                </div>
+            `;
+        }
+
+        function getTimerHTML(treatmentId) {
+            const timer = timers[treatmentId];
+            if (!timer) {
+                return '';
+            }
+
+            const timeLeft = timer.endTime - Date.now();
+            if (timeLeft <= 0) {
+                // Timer expired - show alert
+                showTimerExpiredAlert(treatmentId);
+                return '<span class="timer danger">Time expired!</span>';
+            }
+
+            const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            
+            const timerClass = timeLeft < 3600000 ? 'danger' : timeLeft < 7200000 ? 'warning' : 'running';
+            
+            return `
+                <span class="timer ${timerClass}">
+                    ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}
+                </span>
+                <button class="btn btn-secondary btn-small" onclick="stopTimer('${treatmentId}')">Stop</button>
+            `;
+        }
+
+        function toggleCustomInput(treatmentId) {
+            const select = document.getElementById(`duration-${treatmentId}`);
+            const customInput = document.getElementById(`custom-${treatmentId}`);
+            if (customInput) {
+                customInput.style.display = select.value === 'custom' ? 'inline-block' : 'none';
+            }
+        }
+
+        function toggleTreatment(id) {
+            const treatment = treatments.find(t => t.id === id);
+            if (treatment) {
+                treatment.isCompleted = !treatment.isCompleted;
+                saveData();
+                renderTreatments();
+            }
+        }
+
+        function toggleTopicalTreatment(id) {
+            const treatment = topicalTreatments.find(t => t.id === id);
+            if (treatment) {
+                treatment.isCompleted = !treatment.isCompleted;
+                saveData();
+                renderTopicalTreatments();
+            }
+        }
+
+        function addCustomTreatment() {
+            const input = document.getElementById('custom-treatment');
+            const name = input.value.trim();
+            
+            if (name) {
+                const newTreatment = {
+                    id: generateId(),
+                    name: name,
+                    isCustom: true,
+                    isCompleted: false
+                };
+                
+                treatments.push(newTreatment);
+                input.value = '';
+                saveData();
+                renderTreatments();
+            }
+        }
+
+        function addCustomTopicalTreatment() {
+            const input = document.getElementById('custom-topical-treatment');
+            const name = input.value.trim();
+            
+            if (name) {
+                const newTreatment = {
+                    id: generateId(),
+                    name: name,
+                    isCustom: true,
+                    isCompleted: false
+                };
+                
+                topicalTreatments.push(newTreatment);
+                input.value = '';
+                saveData();
+                renderTopicalTreatments();
+            }
+        }
+
+        function handleCustomTreatmentEnter(event) {
+            if (event.key === 'Enter') {
+                addCustomTreatment();
+            }
+        }
+
+        function handleCustomTopicalTreatmentEnter(event) {
+            if (event.key === 'Enter') {
+                addCustomTopicalTreatment();
+            }
+        }
+
+        function removeTreatment(id) {
+            treatments = treatments.filter(t => t.id !== id);
+            delete timers[id];
+            saveData();
+            renderTreatments();
+        }
+
+        function removeTopicalTreatment(id) {
+            topicalTreatments = topicalTreatments.filter(t => t.id !== id);
+            delete timers[id];
+            saveData();
+            renderTopicalTreatments();
+        }
+
+        // Timer management
+        function startTimerWithDuration(treatmentId) {
+            const durationSelect = document.getElementById(`duration-${treatmentId}`);
+            const customInput = document.getElementById(`custom-${treatmentId}`);
+            
+            let minutes;
+            if (durationSelect.value === 'custom') {
+                minutes = parseInt(customInput.value);
+                if (!minutes || minutes < 1) {
+                    alert('Please enter a valid duration in minutes');
+                    return;
+                }
+            } else {
+                minutes = parseInt(durationSelect.value);
+            }
+            
+            const endTime = Date.now() + (minutes * 60 * 1000);
+            timers[treatmentId] = { endTime, duration: minutes };
+            
+            updateTimerDisplay();
+            renderTreatments();
+            renderTopicalTreatments();
+        }
+
+        function stopTimer(treatmentId) {
+            delete timers[treatmentId];
+            renderTreatments();
+            renderTopicalTreatments();
+        }
+
+        function showTimerExpiredAlert(treatmentId) {
+            // Visual alert for expired timer
+            if (!timers[treatmentId]?.alerted) {
+                timers[treatmentId] = timers[treatmentId] || {};
+                timers[treatmentId].alerted = true;
+                
+                // Find treatment name
+                const treatment = treatments.find(t => t.id === treatmentId) || 
+                                topicalTreatments.find(t => t.id === treatmentId);
+                const treatmentName = treatment ? treatment.name : 'Treatment';
+                
+                // Show alert
+                alert(`⏰ Timer expired for ${treatmentName}!`);
+                
+                // Flash the page briefly
+                document.body.style.backgroundColor = '#fef2f2';
+                setTimeout(() => {
+                    document.body.style.backgroundColor = '';
+                }, 500);
+            }
+        }
+
+        function updateTimerDisplay() {
+            setTimeout(() => {
+                renderTreatments();
+                renderTopicalTreatments();
+                if (Object.keys(timers).length > 0) {
+                    updateTimerDisplay();
+                }
+            }, 1000);
+        }
+
+        // Temperature check
+        function checkTemperature() {
+            const temp = parseFloat(document.getElementById('temperature').value);
+            const alert = document.getElementById('temperature-alert');
+            
+            if (temp > 25) {
+                alert.classList.remove('hidden');
+                setTimeout(() => alert.classList.add('hidden'), 5000);
+            }
+        }
+
+        // Supplement management
+        function renderSupplements() {
+            const container = document.getElementById('supplements-list');
+            container.innerHTML = '';
+
+            supplements.forEach(supplement => {
+                const item = document.createElement('div');
+                item.className = 'treatment-item';
+                
+                item.innerHTML = `
+                    <div class="treatment-left">
+                        <input type="checkbox" class="checkbox" ${supplement.taken ? 'checked' : ''} 
+                               onchange="toggleSupplement('${supplement.id}')">
+                        <div>
+                            <div class="treatment-name ${supplement.taken ? 'completed' : ''}">${supplement.name}</div>
+                            <div style="font-size: 0.75rem; color: #6b7280;">
+                                ${supplement.dosage} • ${supplement.time} • ${supplement.type}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="treatment-right">
+                        <button class="btn btn-danger btn-small" onclick="removeSupplement('${supplement.id}')">🗑️</button>
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+
+        function addSupplement() {
+            const name = document.getElementById('supplement-name').value.trim();
+            const type = document.getElementById('supplement-type').value;
+            const dosage = document.getElementById('supplement-dosage').value.trim();
+            const time = document.getElementById('supplement-time').value;
+            
+            if (name && dosage && time) {
+                const newSupplement = {
+                    id: generateId(),
+                    name,
+                    type,
+                    dosage,
+                    time,
+                    taken: false
+                };
+                
+                supplements.push(newSupplement);
+                
+                // Clear form
+                document.getElementById('supplement-name').value = '';
+                document.getElementById('supplement-dosage').value = '';
+                document.getElementById('supplement-time').value = '';
+                
+                saveData();
+                renderSupplements();
+            }
+        }
+
+        function toggleSupplement(id) {
+            const supplement = supplements.find(s => s.id === id);
+            if (supplement) {
+                supplement.taken = !supplement.taken;
+                saveData();
+                renderSupplements();
+            }
+        }
+
+        function removeSupplement(id) {
+            supplements = supplements.filter(s => s.id !== id);
+            saveData();
+            renderSupplements();
+        }
+
+        // Analytics
+        function setViewMode(mode) {
+            // Update button styles
+            const buttons = document.querySelectorAll('#analytics-tab .btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            
+            event.target.classList.remove('btn-secondary');
+            event.target.classList.add('btn-primary');
+        }
+
+        // Save Day functionality
+        function saveDay() {
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+            const notes = document.getElementById('daily-notes').value.trim();
+            const temperature = document.getElementById('temperature').value;
+            const storageLocation = document.getElementById('storage-location').value;
+            
+            // Get hair quality ratings
+            const hairQuality = {
+                frontal: parseInt(document.getElementById('frontal-rating').value),
+                middle: parseInt(document.getElementById('middle-rating').value),
+                vertex: parseInt(document.getElementById('vertex-rating').value)
+            };
+            
+            // Get completed treatments
+            const completedTopicalTreatments = topicalTreatments
+                .filter(t => t.isCompleted)
+                .map(t => t.name);
+            
+            const completedTreatments = treatments
+                .filter(t => t.isCompleted)
+                .map(t => t.name);
+            
+            // Get taken supplements
+            const takenSupplements = supplements
+                .filter(s => s.taken)
+                .map(s => ({ name: s.name, dosage: s.dosage, time: s.time }));
+            
+            // Create day entry
+            const dayEntry = {
+                date: today,
+                topicalTreatments: completedTopicalTreatments,
+                otherTreatments: completedTreatments,
+                supplements: takenSupplements,
+                hairQuality: hairQuality,
+                notes: notes,
+                temperature: temperature,
+                storageLocation: storageLocation,
+                photo: currentPhotoData, // Include photo data
+                timestamp: new Date().toISOString()
+            };
+            
+            // Check if entry for today already exists
+            const existingIndex = dailyHistory.findIndex(entry => entry.date === today);
+            if (existingIndex !== -1) {
+                // Update existing entry
+                dailyHistory[existingIndex] = dayEntry;
+            } else {
+                // Add new entry
+                dailyHistory.push(dayEntry);
+            }
+            
+            // Sort by date (most recent first)
+            dailyHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            try {
+                saveData();
+                renderHistory();
+                updateCharts();
+                updateStats(); // Add this line to update stats after saving
+                
+                // Clear the form after successful save
+                clearPhoto();
+                document.getElementById('daily-notes').value = '';
+                
+                // Show confirmation
+                alert('Day saved successfully!');
+            } catch (error) {
+                console.error('Error saving data:', error);
+                if (error.name === 'QuotaExceededError') {
+                    alert('Storage limit exceeded. The photo might be too large. Please try with a smaller image or clear some old data.');
+                } else {
+                    alert('Error saving data. Please try again.');
+                }
+            }
+        }
+
+        // Render history
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            container.innerHTML = '';
+            
+            if (dailyHistory.length === 0) {
+                container.innerHTML = '<div class="no-history">No saved days yet. Use "Save Day" to start tracking your history!</div>';
+                return;
+            }
+            
+            dailyHistory.forEach(entry => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-entry';
+                
+                const formattedDate = new Date(entry.date).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                let html = `<div class="history-date">${formattedDate}</div>`;
+                
+                // Photo
+                if (entry.photo) {
+                    html += `
+                        <div class="photo-container">
+                            <img src="${entry.photo}" alt="Progress photo for ${formattedDate}" onclick="viewFullPhoto('${entry.photo}', '${formattedDate}')">
+                            <div class="photo-caption">Progress Photo (click to enlarge)</div>
+                        </div>
+                    `;
+                }
+                
+                // Topical Treatments
+                if (entry.topicalTreatments && entry.topicalTreatments.length > 0) {
+                    html += `
+                        <div class="history-section">
+                            <div class="history-section-title">Topical Treatments:</div>
+                            <div class="history-items">• ${entry.topicalTreatments.join('<br>• ')}</div>
+                        </div>
+                    `;
+                }
+                
+                // Other Treatments
+                if (entry.otherTreatments && entry.otherTreatments.length > 0) {
+                    html += `
+                        <div class="history-section">
+                            <div class="history-section-title">Other Treatments:</div>
+                            <div class="history-items">• ${entry.otherTreatments.join('<br>• ')}</div>
+                        </div>
+                    `;
+                }
+                
+                // Supplements
+                if (entry.supplements && entry.supplements.length > 0) {
+                    const supplementsText = entry.supplements.map(s => `${s.name} (${s.dosage}) at ${s.time}`).join('<br>• ');
+                    html += `
+                        <div class="history-section">
+                            <div class="history-section-title">Supplements:</div>
+                            <div class="history-items">• ${supplementsText}</div>
+                        </div>
+                    `;
+                }
+                
+                // Hair Quality Ratings
+                if (entry.hairQuality) {
+                    html += `
+                        <div class="history-section">
+                            <div class="history-section-title">Hair Quality Ratings:</div>
+                            <div class="history-items">
+                                • Frontal: ${entry.hairQuality.frontal}/10<br>
+                                • Middle: ${entry.hairQuality.middle}/10<br>
+                                • Vertex: ${entry.hairQuality.vertex}/10
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Temperature and Storage
+                if (entry.temperature || entry.storageLocation) {
+                    html += `<div class="history-section">`;
+                    if (entry.temperature) {
+                        html += `<div class="history-section-title">Max Temperature: ${entry.temperature}°C</div>`;
+                    }
+                    if (entry.storageLocation) {
+                        html += `<div class="history-section-title">Storage: ${entry.storageLocation}</div>`;
+                    }
+                    html += `</div>`;
+                }
+                
+                // Notes
+                if (entry.notes) {
+                    html += `
+                        <div class="history-section">
+                            <div class="history-section-title">Notes:</div>
+                            <div class="history-notes">"${entry.notes}"</div>
+                        </div>
+                    `;
+                }
+                
+                historyItem.innerHTML = html;
+                container.appendChild(historyItem);
+            });
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            if (dailyHistory.length === 0) {
+                alert('No history data to export!');
+                return;
+            }
+            
+            // CSV Headers
+            const headers = [
+                'Date',
+                'Topical Treatments',
+                'Other Treatments', 
+                'Supplements',
+                'Frontal Hair Quality',
+                'Middle Hair Quality',
+                'Vertex Hair Quality',
+                'Temperature (°C)',
+                'Storage Location',
+                'Has Photo',
+                'Notes'
+            ];
+            
+            // Create CSV rows
+            const rows = dailyHistory.map(entry => {
+                return [
+                    entry.date,
+                    (entry.topicalTreatments || []).join('; '),
+                    (entry.otherTreatments || []).join('; '),
+                    (entry.supplements || []).map(s => `${s.name} (${s.dosage}) at ${s.time}`).join('; '),
+                    entry.hairQuality ? entry.hairQuality.frontal : '',
+                    entry.hairQuality ? entry.hairQuality.middle : '',
+                    entry.hairQuality ? entry.hairQuality.vertex : '',
+                    entry.temperature || '',
+                    entry.storageLocation || '',
+                    entry.photo ? 'Yes' : 'No',
+                    entry.notes || ''
+                ].map(field => `"${field.replace(/"/g, '""')}"`); // Escape quotes
+            });
+            
+            // Combine headers and rows
+            const csvContent = [headers, ...rows]
+                .map(row => row.join(','))
+                .join('\n');
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `hair-care-history-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Chart functions
+        function initializeCharts() {
+            try {
+                // Initialize hair quality chart
+                const hairCtx = document.getElementById('hairQualityChart');
+                if (hairCtx && typeof Chart !== 'undefined') {
+                    hairQualityChart = new Chart(hairCtx, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: 'Frontal',
+                                    data: [],
+                                    borderColor: '#ef4444',
+                                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Middle',
+                                    data: [],
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                    tension: 0.4
+                                },
+                                {
+                                    label: 'Vertex',
+                                    data: [],
+                                    borderColor: '#10b981',
+                                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                    tension: 0.4
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 10,
+                                    title: {
+                                        display: true,
+                                        text: 'Hair Quality (1-10)'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Date'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Hair Quality Trends Over Time'
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Initialize supplement chart
+                const suppCtx = document.getElementById('supplementChart');
+                if (suppCtx && typeof Chart !== 'undefined') {
+                    supplementChart = new Chart(suppCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: 'Days Taken',
+                                    data: [],
+                                    backgroundColor: '#10b981',
+                                    borderColor: '#059669',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Days Missed',
+                                    data: [],
+                                    backgroundColor: '#ef4444',
+                                    borderColor: '#dc2626',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Number of Days'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Supplements'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Supplement Compliance (Last 30 Days)'
+                                }
+                            }
+                        }
+                    });
+                }
+
+                updateCharts();
+            } catch (error) {
+                console.error('Error initializing charts:', error);
+            }
+        }
+
+        function updateCharts() {
+            try {
+                if (!hairQualityChart || !supplementChart) return;
+                
+                // Update hair quality chart
+                const hairData = dailyHistory
+                    .filter(entry => entry.hairQuality)
+                    .slice(0, 30) // Last 30 entries
+                    .reverse(); // Chronological order
+                
+                const dates = hairData.map(entry => {
+                    const date = new Date(entry.date);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
+                
+                hairQualityChart.data.labels = dates;
+                hairQualityChart.data.datasets[0].data = hairData.map(entry => entry.hairQuality.frontal);
+                hairQualityChart.data.datasets[1].data = hairData.map(entry => entry.hairQuality.middle);
+                hairQualityChart.data.datasets[2].data = hairData.map(entry => entry.hairQuality.vertex);
+                hairQualityChart.update();
+
+                // Update supplement chart
+                const last30Days = dailyHistory.slice(0, 30);
+                const supplementStats = {};
+                
+                // Get all unique supplements
+                const allSupplements = [...new Set(
+                    last30Days.flatMap(entry => 
+                        (entry.supplements || []).map(s => s.name)
+                    )
+                )];
+                
+                // Calculate taken/missed for each supplement
+                allSupplements.forEach(suppName => {
+                    let taken = 0;
+                    let total = last30Days.length;
+                    
+                    last30Days.forEach(entry => {
+                        const wasTaken = (entry.supplements || []).some(s => s.name === suppName);
+                        if (wasTaken) taken++;
+                    });
+                    
+                    supplementStats[suppName] = {
+                        taken: taken,
+                        missed: total - taken
+                    };
+                });
+                
+                const suppLabels = Object.keys(supplementStats);
+                const takenData = suppLabels.map(name => supplementStats[name].taken);
+                const missedData = suppLabels.map(name => supplementStats[name].missed);
+                
+                supplementChart.data.labels = suppLabels;
+                supplementChart.data.datasets[0].data = takenData;
+                supplementChart.data.datasets[1].data = missedData;
+                supplementChart.update();
+            } catch (error) {
+                console.error('Error updating charts:', error);
+            }
+        }
+
+        // Update statistics in analytics
+        function updateStats() {
+            try {
+                // Update Days Tracked - this is the main change
+                const daysTrackedElement = document.getElementById('days-tracked');
+                if (daysTrackedElement) {
+                    daysTrackedElement.textContent = dailyHistory.length;
+                }
+
+                // Calculate and update average hair quality
+                const hairQualityEntries = dailyHistory.filter(entry => entry.hairQuality);
+                if (hairQualityEntries.length > 0) {
+                    const totalFrontal = hairQualityEntries.reduce((sum, entry) => sum + entry.hairQuality.frontal, 0);
+                    const totalMiddle = hairQualityEntries.reduce((sum, entry) => sum + entry.hairQuality.middle, 0);
+                    const totalVertex = hairQualityEntries.reduce((sum, entry) => sum + entry.hairQuality.vertex, 0);
+                    
+                    const avgQuality = (totalFrontal + totalMiddle + totalVertex) / (hairQualityEntries.length * 3);
+                    const avgHairQualityElement = document.getElementById('avg-hair-quality');
+                    if (avgHairQualityElement) {
+                        avgHairQualityElement.textContent = avgQuality.toFixed(1);
+                    }
+                }
+
+                // Calculate treatment compliance
+                if (dailyHistory.length > 0) {
+                    const totalTreatments = dailyHistory.reduce((sum, entry) => {
+                        return sum + (entry.topicalTreatments?.length || 0) + (entry.otherTreatments?.length || 0);
+                    }, 0);
+                    
+                    // Assuming an average of 3-4 treatments per day as "full compliance"
+                    const expectedTreatments = dailyHistory.length * 3.5;
+                    const compliance = Math.min(100, (totalTreatments / expectedTreatments) * 100);
+                    
+                    const complianceElement = document.getElementById('treatment-compliance');
+                    if (complianceElement) {
+                        complianceElement.textContent = Math.round(compliance) + '%';
+                    }
+                }
+
+                // Update active supplements count
+                const activeSupplementsElement = document.getElementById('active-supplements');
+                if (activeSupplementsElement) {
+                    activeSupplementsElement.textContent = supplements.length;
+                }
+
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        // Initialize app when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
